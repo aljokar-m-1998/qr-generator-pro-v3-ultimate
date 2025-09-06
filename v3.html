@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Generator Pro V3 Ultimate</title>
+<style>
+:root{--bg:#f6f7fb;--text:#1f2335;--card:#ffffff;--muted:#6b7280;--accent:#4f46e5;--accent-2:#7c3aed;--border:#e5e7eb}
+.dark{--bg:#0b1020;--text:#e6e8ef;--card:#121831;--muted:#a3a7bb;--accent:#8b5cf6;--accent-2:#22d3ee;--border:#1e2445}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Inter,system-ui,Arial,sans-serif;background:linear-gradient(135deg,#eef2f3,#8e9eab);color:#222}
+.dark body, .dark{background:linear-gradient(135deg,#101425,#3a2f55);color:var(--text)}
+.container{max-width:1200px;margin:24px auto;padding:0 16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{margin:0;font-size:24px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.25)}
+.badge{font-size:11px;border:1px solid rgba(255,255,255,.6);color:#fff;padding:4px 8px;border-radius:999px;margin-left:8px;opacity:.9}
+header .controls{display:flex;gap:10px;align-items:center}
+select,button,input,textarea{font-size:14px}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700;transition:.2s;box-shadow:0 6px 20px rgba(79,70,229,.25)}
+.btn.secondary{background:#f3f4f6;color:#111;border:1px solid #e5e7eb;box-shadow:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);box-shadow:none}
+.btn.danger{background:#ef4444;box-shadow:0 6px 20px rgba(239,68,68,.25)}
+.btn:hover{transform:translateY(-1px)}
+.toggle{appearance:none;width:48px;height:28px;border-radius:999px;position:relative;background:#c7c9d3;outline:none;cursor:pointer;border:none}
+.toggle:checked{background:var(--accent-2)}.toggle:before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.toggle:checked:before{left:23px}
+.card{background:#fff;border-radius:14px;border:1px solid #e8eaf0;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:16px}
+.dark .card{background:var(--card);border:1px solid var(--border)}
+.grid-2{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+@media (max-width:960px){.grid-2{grid-template-columns:1fr}}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.controls label{font-size:12px;color:#555;margin-bottom:6px;display:block}
+.dark .controls label{color:var(--muted)}
+.input, .select{width:100%;padding:10px;border:1px solid #d8dbe3;border-radius:10px;background:#fff;color:#111}
+.dark .input, .dark .select{background:#0f1430;border:1px solid #26305b;color:#e6e8ef}
+input[type="color"]{height:42px;padding:0}
+input[type="file"]{border:1px dashed #cfd3df;background:transparent;padding:8px;border-radius:10px}
+.dark input[type="file"]{border-color:#2a3566}
+.section-title{font-weight:800;margin:10px 0 4px 0;color:#111}
+.dark .section-title{color:#e6e8ef}
+.preview{display:flex;align-items:center;justify-content:center;background:#fff;border:3px solid #4f46e5;border-radius:14px;min-height:360px}
+.dark .preview{background:#0f1430;border-color:#26305b}
+.tip{color:#6b7280;font-size:12px;margin-top:6px}
+.dark .tip{color:#9aa0b5}
+.hr{height:1px;background:linear-gradient(90deg,transparent,#dfe3ee,transparent);margin:14px 0}
+.dark .hr{background:linear-gradient(90deg,transparent,#26305b,transparent)}
+.kv{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:rgba(0,0,0,.04);padding:10px;border-radius:8px;border:1px solid #e5e7eb;white-space:pre-wrap}
+.dark .code{background:#0c1024;border-color:#26305b}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="kv">
+      <h1>QR Generator Pro V3 Ultimate</h1>
+      <span class="badge">Single-file</span>
+      <span class="badge">Batch + Smart Builder</span>
+    </div>
+    <div class="controls" style="grid-template-columns:repeat(3,minmax(0,auto));gap:10px">
+      <label class="kv"><input id="darkToggle" class="toggle" type="checkbox"><span style="font-size:13px">Dark</span></label>
+      <select id="lang" class="select" style="padding:8px 10px;width:auto">
+        <option value="en" selected>English</option>
+        <option value="ar">العربية</option>
+      </select>
+      <button id="reset" class="btn ghost">Reset</button>
+    </div>
+  </header>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-title" data-i="coreTitle">Core options</div>
+      <div class="controls">
+        <div>
+          <label data-i="dataLabel">Data (text or URL)</label>
+          <input id="data" class="input" type="text" placeholder="https://example.com">
+        </div>
+        <div>
+          <label data-i="sizeLabel">Size</label>
+          <input id="size" class="input" type="number" min="128" max="2048" value="320">
+        </div>
+        <div>
+          <label data-i="ecLabel">Error correction</label>
+          <select id="ec" class="select">
+            <option value="L">L</option>
+            <option value="M" selected>M</option>
+            <option value="Q">Q</option>
+            <option value="H">H</option>
+          </select>
+        </div>
+        <div>
+          <label data-i="marginLabel">Margin</label>
+          <input id="margin" class="input" type="number" min="0" max="64" value="8">
+        </div>
+
+        <div>
+          <label data-i="dotsStyle">Dots style</label>
+          <select id="dotsType" class="select">
+            <option value="square">square</option>
+            <option value="dots">dots</option>
+            <option value="rounded" selected>rounded</option>
+            <option value="classy">classy</option>
+            <option value="classy-rounded">classy-rounded</option>
+            <option value="extra-rounded">extra-rounded</option>
+          </select>
+        </div>
+        <div>
+          <label data-i="dotsColor">Dots color</label>
+          <input id="dotsColor" class="input" type="color" value="#111827">
+        </div>
+
+        <div>
+          <label data-i="cornerSqLabel">Corners square</label>
+          <select id="cornerSqType" class="select">
+            <option value="square">square</option>
+            <option value="extra-rounded" selected>extra-rounded</option>
+            <option value="dot">dot</option>
+          </select>
+        </div>
+        <div>
+          <label data-i="cornerSqColor">Corners square color</label>
+          <input id="cornerSqColor" class="input" type="color" value="#111827">
+        </div>
+
+        <div>
+          <label data-i="cornerDotLabel">Corners dot</label>
+          <select id="cornerDotType" class="select">
+            <option value="square">square</option>
+            <option value="dot" selected>dot</option>
+          </select>
+        </div>
+        <div>
+          <label data-i="cornerDotColor">Corners dot color</label>
+          <input id="cornerDotColor" class="input" type="color" value="#111827">
+        </div>
+
+        <div>
+          <label data-i="bgLabel">Background</label>
+          <input id="bgColor" class="input" type="color" value="#ffffff">
+        </div>
+        <div>
+          <label data-i="transparentBg">Transparent BG</label>
+          <select id="transparent" class="select">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+
+        <div>
+          <label data-i="gradLabel">Gradient (dots)</label>
+          <div class="kv">
+            <input id="g1" class="input" type="color" value="#0ea5e9" style="width:48%">
+            <input id="g2" class="input" type="color" value="#8b5cf6" style="width:48%">
+          </div>
+        </div>
+        <div>
+          <label data-i="gradType">Gradient type</label>
+          <select id="gType" class="select">
+            <option value="linear" selected>linear</option>
+            <option value="radial">radial</option>
+          </select>
+        </div>
+
+        <div>
+          <label data-i="logoLabel">Logo (PNG/SVG)</label>
+          <input id="logo" class="input" type="file" accept=".png,.svg,.jpg,.jpeg">
+          <div class="tip" data-i="logoTip">SVG/PNG recommended</div>
+        </div>
+        <div>
+          <label data-i="logoSize">Logo size</label>
+          <input id="logoSize" class="input" type="number" min="0" max="0.6" step="0.05" value="0.25">
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="kv" style="gap:8px;flex-wrap:wrap">
+        <button id="generate" class="btn" data-i="btnGenerate">Generate</button>
+        <button id="downloadPng" class="btn secondary" data-i="btnPng">Download PNG</button>
+        <button id="downloadSvg" class="btn secondary" data-i="btnSvg">Download SVG</button>
+        <button id="embedBtn" class="btn secondary" data-i="btnEmbed">Embed code</button>
+        <button id="savePreset" class="btn ghost" data-i="btnSave">Save preset</button>
+        <button id="loadPreset" class="btn ghost" data-i="btnLoad">Load preset</button>
+        <button id="clearPreset" class="btn ghost" data-i="btnClearPreset">Clear preset</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-title" data-i="batchTitle">Batch from CSV</div>
+      <div class="controls">
+        <div style="grid-column:span 2">
+          <input id="csv" class="input" type="file" accept=".csv,.txt">
+          <div class="tip" data-i="csvTip">One value per line, or CSV with header "data".</div>
+        </div>
+      </div>
+      <div class="kv" style="margin-top:10px">
+        <button id="runBatch" class="btn" data-i="btnZip">Generate ZIP</button>
+        <button id="sampleCsv" class="btn secondary" data-i="btnSample">Sample CSV</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="section-title" data-i="smartTitle">Smart link builder</div>
+      <div class="kv" style="margin-bottom:8px">
+        <select id="smartType" class="select" style="width:auto">
+          <option value="utm">UTM campaign</option>
+          <option value="wa">WhatsApp</option>
+          <option value="mailto">Mailto</option>
+          <option value="tel">Tel</option>
+        </select>
+        <button id="smartBuild" class="btn secondary" data-i="btnSmart">Build link → Data</button>
+      </div>
+      <div id="smartFields" class="controls" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+
+      <div class="hr"></div>
+      <div class="tip" data-i="tipLocal">Tip: presets, language, and theme are saved locally on this device.</div>
+    </div>
+
+    <div class="card preview" id="preview">
+      <!-- QR preview here -->
+    </div>
+  </div>
+
+  <footer class="kv" style="justify-content:space-between">
+    <div class="tip">QR Generator Pro V3 Ultimate</div>
+    <div class="kv">
+      <button id="copyEmbed" class="btn ghost">Copy last embed</button>
+    </div>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+
+// i18n
+const I = {
+  en: {
+    coreTitle:"Core options",
+    dataLabel:"Data (text or URL)",
+    sizeLabel:"Size",
+    ecLabel:"Error correction",
+    marginLabel:"Margin",
+    dotsStyle:"Dots style",
+    dotsColor:"Dots color",
+    cornerSqLabel:"Corners square",
+    cornerSqColor:"Corners square color",
+    cornerDotLabel:"Corners dot",
+    cornerDotColor:"Corners dot color",
+    bgLabel:"Background",
+    transparentBg:"Transparent BG",
+    gradLabel:"Gradient (dots)",
+    gradType:"Gradient type",
+    logoLabel:"Logo (PNG/SVG)",
+    logoTip:"SVG/PNG recommended",
+    logoSize:"Logo size",
+    btnGenerate:"Generate",
+    btnPng:"Download PNG",
+    btnSvg:"Download SVG",
+    btnEmbed:"Embed code",
+    btnSave:"Save preset",
+    btnLoad:"Load preset",
+    btnClearPreset:"Clear preset",
+    batchTitle:"Batch from CSV",
+    csvTip:'One value per line, or CSV with header "data".',
+    btnZip:"Generate ZIP",
+    btnSample:"Sample CSV",
+    smartTitle:"Smart link builder",
+    btnSmart:"Build link → Data",
+    tipLocal:"Tip: presets, language, and theme are saved locally on this device."
+  },
+  ar: {
+    coreTitle:"الخيارات الأساسية",
+    dataLabel:"البيانات (نص أو رابط)",
+    sizeLabel:"الحجم",
+    ecLabel:"تصحيح الأخطاء",
+    marginLabel:"الهامش",
+    dotsStyle:"نمط النقاط",
+    dotsColor:"لون النقاط",
+    cornerSqLabel:"الزوايا المربعة",
+    cornerSqColor:"لون الزوايا المربعة",
+    cornerDotLabel:"نقطة الزوايا",
+    cornerDotColor:"لون نقطة الزوايا",
+    bgLabel:"الخلفية",
+    transparentBg:"خلفية شفافة",
+    gradLabel:"تدرّج لوني (النقاط)",
+    gradType:"نوع التدرّج",
+    logoLabel:"شعار (PNG/SVG)",
+    logoTip:"يفضّل SVG/PNG",
+    logoSize:"حجم الشعار",
+    btnGenerate:"توليد",
+    btnPng:"تحميل PNG",
+    btnSvg:"تحميل SVG",
+    btnEmbed:"كود تضمين",
+    btnSave:"حفظ الإعدادات",
+    btnLoad:"استرجاع الإعدادات",
+    btnClearPreset:"مسح الإعدادات",
+    batchTitle:"توليد دفعات من CSV",
+    csvTip:'سطر لكل قيمة، أو CSV بعمود اسمه "data".',
+    btnZip:"إنشاء ملف ZIP",
+    btnSample:"CSV تجريبي",
+    smartTitle:"منشئ الروابط الذكي",
+    btnSmart:"إنشاء رابط → إلى الحقل",
+    tipLocal:"معلومة: الإعدادات واللغة والوضع تحفظ محليًا على هذا الجهاز."
+  }
+};
+
+function applyLang(lang){
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const k = el.getAttribute("data-i");
+    if(I[lang][k]) el.textContent = I[lang][k];
+  });
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+  localStorage.setItem("qr_lang", lang);
+}
+
+// Theme
+function setDark(enabled){
+  document.body.parentElement.classList.toggle("dark", enabled);
+  $("#darkToggle").checked = enabled;
+  localStorage.setItem("qr_dark", enabled ? "1" : "0");
+}
+
+// QR state
+const state = { qr:null, logoDataUrl:null, lastEmbed:"" };
+
+function getOptions(){
+  const size = +$("#size").value || 320;
+  const transparent = $("#transparent").value === "yes";
+  const bgColor = transparent ? "rgba(255,255,255,0)" : $("#bgColor").value;
+  const g1 = $("#g1").value, g2 = $("#g2").value, gType = $("#gType").value;
+  const gradient = (g1 !== g2) ? { type: gType, rotation: 0, colorStops: [{offset:0,color:g1},{offset:1,color:g2}] } : undefined;
+
+  return {
+    width: size, height: size, type: "canvas",
+    data: $("#data").value || "https://example.com",
+    image: state.logoDataUrl || undefined,
+    imageOptions: { hideBackgroundDots: true, imageSize: Math.max(0, Math.min(0.6, parseFloat($("#logoSize").value)||0.25)), margin: 0, crossOrigin: "anonymous" },
+    qrOptions: { errorCorrectionLevel: $("#ec").value, margin: +$("#margin").value || 0 },
+    backgroundOptions: { color: bgColor },
+    dotsOptions: { color: $("#dotsColor").value, type: $("#dotsType").value, ...(gradient?{gradient}:{}) },
+    cornersSquareOptions: { color: $("#cornerSqColor").value, type: $("#cornerSqType").value },
+    cornersDotOptions: { color: $("#cornerDotColor").value, type: $("#cornerDotType").value }
+  };
+}
+
+async function initQR(){
+  if(state.qr) return;
+  state.qr = new QRCodeStyling(getOptions());
+  $("#preview").innerHTML = "";
+  state.qr.append($("#preview"));
+}
+
+async function updateQR(){
+  await initQR();
+  state.qr.update(getOptions());
+}
+
+async function download(ext){
+  await updateQR();
+  state.qr.download({ name: "qr", extension: ext });
+}
+
+// Presets
+function savePreset(){
+  const preset = {
+    data: $("#data").value, size: $("#size").value, ec: $("#ec").value, margin: $("#margin").value,
+    dotsType: $("#dotsType").value, dotsColor: $("#dotsColor").value,
+    cornerSqType: $("#cornerSqType").value, cornerSqColor: $("#cornerSqColor").value,
+    cornerDotType: $("#cornerDotType").value, cornerDotColor: $("#cornerDotColor").value,
+    bgColor: $("#bgColor").value, transparent: $("#transparent").value,
+    g1: $("#g1").value, g2: $("#g2").value, gType: $("#gType").value,
+    logoSize: $("#logoSize").value
+  };
+  localStorage.setItem("qr_preset_v3u", JSON.stringify(preset));
+  toast("Preset saved");
+}
+
+function loadPreset(){
+  const p = localStorage.getItem("qr_preset_v3u");
+  if(!p){ toast("No preset found"); return; }
+  try{
+    const v = JSON.parse(p);
+    for(const k in v){ const el = document.getElementById(k); if(el) el.value = v[k]; }
+    updateQR();
+    toast("Preset loaded");
+  }catch{ toast("Preset corrupted"); }
+}
+
+function clearPreset(){
+  localStorage.removeItem("qr_preset_v3u");
+  toast("Preset cleared");
+}
+
+// Toast (lightweight)
+let toastTimer=null;
+function toast(msg){
+  let t = document.getElementById("toast");
+  if(!t){
+    t = document.createElement("div");
+    t.id = "toast";
+    t.style.position="fixed"; t.style.bottom="18px"; t.style.left="50%"; t.style.transform="translateX(-50%)";
+    t.style.background="rgba(0,0,0,.8)"; t.style.color="#fff"; t.style.padding="10px 14px"; t.style.borderRadius="10px";
+    t.style.fontFamily="inherit"; t.style.fontSize="13px"; t.style.zIndex="9999"; t.style.boxShadow="0 10px 30px rgba(0,0,0,.3)";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity="1";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.opacity="0"; }, 1600);
+}
+
+// File helpers
+function fileToDataURL(file){
+  return new Promise((res, rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// CSV parsing: first line "data" header or plain lines
+function parseCSVText(txt){
+  const lines = txt.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(lines.length===0) return [];
+  const first = lines[0].toLowerCase();
+  if(first.includes("data")){
+    const headers = first.split(",").map(s=>s.trim().toLowerCase());
+    const idx = headers.indexOf("data");
+    if(idx === -1) return [];
+    return lines.slice(1).map(l=>{
+      const cols = l.split(","); return (cols[idx]||"").trim();
+    }).filter(Boolean);
+  }
+  return lines;
+}
+
+async function generateQRBlob(value, baseOpts){
+  const q = new QRCodeStyling({...baseOpts, data:value});
+  // getRawData returns a Blob (png/svg depending on extension); default png
+  const blob = await q.getRawData("png");
+  return blob;
+}
+
+async function runBatch(){
+  const file = $("#csv").files && $("#csv").files[0];
+  if(!file){ toast("Upload CSV or TXT first"); return; }
+  const txt = await file.text();
+  const rows = parseCSVText(txt);
+  if(rows.length===0){ toast("No valid rows found"); return; }
+  const opts = getOptions();
+  const zip = new JSZip();
+  let n=0;
+  for(const v of rows){
+    try{
+      const b = await generateQRBlob(v, opts);
+      const name = `qr_${(++n).toString().padStart(3,"0")}.png`;
+      zip.file(name, b);
+    }catch(e){ console.error("Row failed:", v, e); }
+  }
+  const out = await zip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(out);
+  const a = document.createElement("a");
+  a.href = url; a.download = "qr_batch.zip"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 6000);
+  toast("ZIP ready");
+}
+
+function downloadSampleCSV(){
+  const sample = "data\nhttps://example.com\nHello world\nhttps://wa.me/+201000000000?text=Hi";
+  const blob = new Blob([sample], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href=url; a.download="sample.csv"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 3000);
+}
+
+// Smart builder
+const smartConfigs = {
+  utm: [
+    ["url","Landing URL"], ["source","utm_source"], ["medium","utm_medium"], ["campaign","utm_campaign"],
+    ["term","utm_term (optional)"], ["content","utm_content (optional)"]
+  ],
+  wa: [
+    ["phone","Phone (e.g., +201234567890)"], ["text","Message"]
+  ],
+  mailto: [
+    ["to","Recipient"], ["subject","Subject"], ["body","Body"]
+  ],
+  tel: [
+    ["phone","Phone"]
+  ]
+};
+
+function renderSmartFields(){
+  const type = $("#smartType").value;
+  const wrap = $("#smartFields");
+  wrap.innerHTML = "";
+  smartConfigs[type].forEach(([k,ph])=>{
+    const id = "s_"+k;
+    const d = document.createElement("div");
+    const lab = document.createElement("label"); lab.textContent = ph;
+    const inp = document.createElement("input"); inp.className="input"; inp.type="text"; inp.id=id; inp.placeholder=ph;
+    d.appendChild(lab); d.appendChild(inp); wrap.appendChild(d);
+  });
+}
+
+function buildSmartLink(){
+  const type = $("#smartType").value;
+  let built = "";
+  if(type==="utm"){
+    const url = ($("#s_url")?.value || "").trim();
+    if(!url){ toast("Landing URL required"); return; }
+    const P = new URLSearchParams();
+    const add = (k, id) => { const v = ($("#"+id)?.value || "").trim(); if(v) P.set(k, v); };
+    add("utm_source","s_source");
+    add("utm_medium","s_medium");
+    add("utm_campaign","s_campaign");
+    const term = ($("#s_term")?.value || "").trim(); if(term) P.set("utm_term", term);
+    const content = ($("#s_content")?.value || "").trim(); if(content) P.set("utm_content", content);
+    built = url.includes("?") ? url+"&"+P.toString() : url+"?"+P.toString();
+  }else if(type==="wa"){
+    const phone = ($("#s_phone")?.value || "").replace(/\s+/g,"");
+    const text = encodeURIComponent($("#s_text")?.value || "");
+    if(!phone){ toast("Phone required"); return; }
+    built = `https://wa.me/${encodeURIComponent(phone)}?text=${text}`;
+  }else if(type==="mailto"){
+    const to = ($("#s_to")?.value || "").trim();
+    if(!to){ toast("Recipient required"); return; }
+    const subject = encodeURIComponent($("#s_subject")?.value || "");
+    const body = encodeURIComponent($("#s_body")?.value || "");
+    built = `mailto:${to}?subject=${subject}&body=${body}`;
+  }else if(type==="tel"){
+    const phone = ($("#s_phone")?.value || "").replace(/\s+/g,"");
+    if(!phone){ toast("Phone required"); return; }
+    built = `tel:${phone}`;
+  }
+  $("#data").value = built;
+  updateQR();
+  toast("Link built");
+}
+
+// Embed code
+async function openEmbedWindow(){
+  await updateQR();
+  const blob = await state.qr.getRawData("png");
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const dataUrl = reader.result;
+    const code = `<img alt="QR" src="${dataUrl}" width="${$("#size").value}" height="${$("#size").value}" />`;
+    state.lastEmbed = code;
+    const w = window.open("about:blank","_blank","width=720,height=520");
+    w.document.write(`<pre style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;white-space:pre-wrap">${code.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>`);
+    w.document.close();
+  };
+  reader.readAsDataURL(blob);
+}
+
+async function copyLastEmbed(){
+  if(!state.lastEmbed){ await openEmbedWindow(); }
+  try{
+    await navigator.clipboard.writeText(state.lastEmbed);
+    toast("Embed copied");
+  }catch{
+    toast("Clipboard blocked");
+  }
+}
+
+// Reset
+function resetAll(){
+  $("#data").value="https://example.com";
+  $("#size").value=320; $("#ec").value="M"; $("#margin").value=8;
+  $("#dotsType").value="rounded"; $("#dotsColor").value="#111827";
+  $("#cornerSqType").value="extra-rounded"; $("#cornerSqColor").value="#111827";
+  $("#cornerDotType").value="dot"; $("#cornerDotColor").value="#111827";
+  $("#bgColor").value="#ffffff"; $("#transparent").value="no";
+  $("#g1").value="#0ea5e9"; $("#g2").value="#8b5cf6"; $("#gType").value="linear";
+  $("#logo").value=""; state.logoDataUrl=null; $("#logoSize").value=0.25;
+  updateQR();
+  toast("Reset done");
+}
+
+// Events
+$("#generate").addEventListener("click", updateQR);
+$("#downloadPng").addEventListener("click", ()=>download("png"));
+$("#downloadSvg").addEventListener("click", ()=>download("svg"));
+$("#embedBtn").addEventListener("click", openEmbedWindow);
+$("#copyEmbed").addEventListener("click", copyLastEmbed);
+$("#savePreset").addEventListener("click", savePreset);
+$("#loadPreset").addEventListener("click", loadPreset);
+$("#clearPreset").addEventListener("click", clearPreset);
+$("#reset").addEventListener("click", resetAll);
+
+$("#logo").addEventListener("change", async e=>{
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  try{
+    state.logoDataUrl = await fileToDataURL(f);
+    updateQR();
+  }catch{ toast("Logo failed"); }
+});
+
+$("#runBatch").addEventListener("click", runBatch);
+$("#sampleCsv").addEventListener("click", downloadSampleCSV);
+
+$("#smartType").addEventListener("change", renderSmartFields);
+$("#smartBuild").addEventListener("click", buildSmartLink);
+
+// Language and theme
+$("#lang").addEventListener("change", e=>applyLang(e.target.value));
+$("#darkToggle").addEventListener("change", e=>setDark(e.target.checked));
+
+// Initial
+(function init(){
+  // Restore prefs
+  const lang = localStorage.getItem("qr_lang") || "en";
+  $("#lang").value = lang;
+  applyLang(lang);
+
+  const dark = localStorage.getItem("qr_dark") === "1";
+  setDark(dark);
+
+  renderSmartFields();
+  updateQR();
+})();
+</script>
+</body>
+</html>

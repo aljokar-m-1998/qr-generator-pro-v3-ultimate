@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Generator Pro V3</title>
+<style>
+:root{--bg:#f7f8fc;--card:#ffffff;--text:#111827;--muted:#6b7280;--brand:#4f46e5;--border:#e5e7eb}
+.dark{--bg:#0b1020;--card:#11152e;--text:#e6e8ef;--muted:#9aa0b5;--brand:#8b5cf6;--border:#1e2445}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.container{max-width:1100px;margin:28px auto;padding:0 16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:20px;margin:0}
+.badge{font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.05);padding:16px}
+.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}
+@media (max-width:960px){.grid{grid-template-columns:1fr}}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.controls label{font-size:12px;color:var(--muted);display:block;margin:2px 0 6px}
+.input,.select,.file{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text)}
+.file{border-style:dashed}
+input[type="color"].input{padding:0;height:40px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.btn{border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700}
+.btn.brand{background:var(--brand);color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn.soft{background:#f3f4f6;color:#111;border:1px solid var(--border)}
+.preview{display:flex;align-items:center;justify-content:center;min-height:360px;border-radius:14px;border:2px dashed var(--border);background:rgba(0,0,0,.02)}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.toggle{appearance:none;width:48px;height:28px;border-radius:999px;background:#c7c9d3;position:relative;outline:none;border:none;cursor:pointer}
+.toggle:before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+.toggle:checked{background:var(--brand)}
+.toggle:checked:before{left:23px}
+hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+.tip{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div style="display:flex;align-items:center;gap:8px">
+      <h1>QR Generator Pro V3</h1>
+      <span class="badge">Single-file</span>
+      <span class="badge">WiFi + vCard</span>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)">
+      <input id="darkToggle" type="checkbox" class="toggle"> Dark
+    </label>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <div class="controls">
+        <div style="grid-column:span 2">
+          <label>QR type</label>
+          <select id="qrType" class="select">
+            <option value="text" selected>Text / URL</option>
+            <option value="wifi">WiFi</option>
+            <option value="vcard">vCard</option>
+          </select>
+        </div>
+
+        <div id="typeFields" style="grid-column:span 2"></div>
+
+        <div>
+          <label>Size</label>
+          <input id="size" class="input" type="number" min="128" max="1024" value="320">
+        </div>
+        <div>
+          <label>Error correction</label>
+          <select id="ec" class="select">
+            <option value="L">L</option><option value="M" selected>M</option>
+            <option value="Q">Q</option><option value="H">H</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Margin</label>
+          <input id="margin" class="input" type="number" min="0" max="64" value="8">
+        </div>
+        <div>
+          <label>Dots style</label>
+          <select id="dotsType" class="select">
+            <option value="square">square</option>
+            <option value="dots">dots</option>
+            <option value="rounded" selected>rounded</option>
+            <option value="classy">classy</option>
+            <option value="classy-rounded">classy-rounded</option>
+            <option value="extra-rounded">extra-rounded</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Dots color</label>
+          <input id="dotsColor" class="input" type="color" value="#111827">
+        </div>
+        <div>
+          <label>Background</label>
+          <input id="bgColor" class="input" type="color" value="#ffffff">
+        </div>
+
+        <div>
+          <label>Transparent BG</label>
+          <select id="transparent" class="select">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div>
+          <label>Logo (optional)</label>
+          <input id="logo" class="file" type="file" accept=".png,.svg,.jpg,.jpeg">
+        </div>
+
+        <div>
+          <label>Logo size</label>
+          <input id="logoSize" class="input" type="number" min="0" max="0.6" step="0.05" value="0.25">
+        </div>
+        <div>
+          <label>Corners style</label>
+          <select id="cornerStyle" class="select">
+            <option value="default" selected>default</option>
+            <option value="dot">dot</option>
+            <option value="extra-rounded">extra-rounded</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="generate" class="btn brand">Generate</button>
+        <button id="downloadPng" class="btn soft">Download PNG</button>
+        <button id="downloadSvg" class="btn soft">Download SVG</button>
+        <button id="copyEmbed" class="btn ghost">Copy embed</button>
+        <button id="reset" class="btn ghost">Reset</button>
+      </div>
+      <hr>
+      <div class="tip">Tip: Use WiFi type for instant connect and vCard for contact cards.</div>
+    </div>
+
+    <div class="card preview" id="preview"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+
+const state = {
+  qr: null,
+  logo: null,
+  lastDataUrl: ""
+};
+
+function toast(msg, dur=1600){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._x);
+  t._x = setTimeout(()=>t.classList.remove("show"), dur);
+}
+
+function fileToDataURL(file){
+  return new Promise((res, rej)=>{
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function renderTypeFields(){
+  const type = $("#qrType").value;
+  const box = $("#typeFields");
+  if(type === "text"){
+    box.innerHTML = `
+      <label>Text or URL</label>
+      <input id="textData" class="input" type="text" placeholder="https://example.com">
+    `;
+  }else if(type === "wifi"){
+    box.innerHTML = `
+      <div class="row">
+        <div>
+          <label>SSID</label>
+          <input id="wifiSsid" class="input" type="text" placeholder="MyWiFi">
+        </div>
+        <div>
+          <label>Encryption</label>
+          <select id="wifiEnc" class="select">
+            <option value="WPA">WPA/WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="">None</option>
+          </select>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="wifiPass" class="input" type="text" placeholder="••••••••">
+        </div>
+        <div>
+          <label>Hidden</label>
+          <select id="wifiHidden" class="select">
+            <option value="false" selected>No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+      </div>
+    `;
+  }else if(type === "vcard"){
+    box.innerHTML = `
+      <div class="row">
+        <div>
+          <label>Full name</label>
+          <input id="vName" class="input" type="text" placeholder="John Doe">
+        </div>
+        <div>
+          <label>Organization</label>
+          <input id="vOrg" class="input" type="text" placeholder="Company Inc.">
+        </div>
+        <div>
+          <label>Title</label>
+          <input id="vTitle" class="input" type="text" placeholder="Product Manager">
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="vPhone" class="input" type="text" placeholder="+201234567890">
+        </div>
+        <div>
+          <label>Email</label>
+          <input id="vEmail" class="input" type="email" placeholder="name@example.com">
+        </div>
+        <div>
+          <label>Website</label>
+          <input id="vUrl" class="input" type="url" placeholder="https://example.com">
+        </div>
+        <div style="grid-column:span 2">
+          <label>Address</label>
+          <input id="vAdr" class="input" type="text" placeholder="Street;City;Region;Postal;Country">
+        </div>
+      </div>
+    `;
+  }
+}
+
+function escapeVCard(s=""){return (s||"").replace(/\\|;|,|\n/g, m=>({"\\":"\\\\",";":"\\;","~":"~",",":"\\,","\n":"\\n"}[m]||m));}
+
+function buildData(){
+  const type = $("#qrType").value;
+  if(type === "text"){
+    return ($("#textData")?.value || "https://example.com").trim();
+  }
+  if(type === "wifi"){
+    const ssid = ($("#wifiSsid")?.value || "").trim();
+    const enc = $("#wifiEnc")?.value || "";
+    const pass = ($("#wifiPass")?.value || "").trim();
+    const hidden = $("#wifiHidden")?.value === "true";
+    // WIFI:T:WPA;S:SSID;P:password;H:true;;
+    return `WIFI:T:${enc};S:${ssid};${enc?`P:${pass};`:""}${hidden?"H:true;":""};`;
+  }
+  // vCard 3.0
+  const name = escapeVCard($("#vName")?.value);
+  const org = escapeVCard($("#vOrg")?.value);
+  const title = escapeVCard($("#vTitle")?.value);
+  const tel = ($("#vPhone")?.value||"").trim();
+  const email = ($("#vEmail")?.value||"").trim();
+  const url = ($("#vUrl")?.value||"").trim();
+  const adr = escapeVCard($("#vAdr")?.value); // Street;City;Region;Postal;Country
+  return [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    name?`FN:${name}`:"",
+    org?`ORG:${org}`:"",
+    title?`TITLE:${title}`:"",
+    tel?`TEL;TYPE=CELL:${tel}`:"",
+    email?`EMAIL:${email}`:"",
+    url?`URL:${url}`:"",
+    adr?`ADR;TYPE=HOME:;;${adr}`:"",
+    "END:VCARD"
+  ].filter(Boolean).join("\n");
+}
+
+function getOptions(){
+  const size = Math.max(128, Math.min(1024, parseInt($("#size").value||"320",10)));
+  const transparent = $("#transparent").value === "yes";
+  const bg = transparent ? "rgba(255,255,255,0)" : $("#bgColor").value;
+  const dotsType = $("#dotsType").value;
+  const cornerStyle = $("#cornerStyle").value;
+  return {
+    width: size,
+    height: size,
+    type: "canvas",
+    data: buildData(),
+    image: state.logo || undefined,
+    imageOptions: { hideBackgroundDots: true, imageSize: Math.max(0, Math.min(0.6, parseFloat($("#logoSize").value||"0.25"))), margin: 0, crossOrigin: "anonymous" },
+    qrOptions: { errorCorrectionLevel: $("#ec").value, margin: Math.max(0, parseInt($("#margin").value||"0",10)) },
+    backgroundOptions: { color: bg },
+    dotsOptions: { color: $("#dotsColor").value, type: dotsType },
+    cornersSquareOptions: { color: $("#dotsColor").value, type: cornerStyle === "default" ? "square" : cornerStyle },
+    cornersDotOptions: { color: $("#dotsColor").value, type: cornerStyle === "default" ? "dot" : cornerStyle }
+  };
+}
+
+async function ensureQR(){
+  if(state.qr) return;
+  state.qr = new QRCodeStyling(getOptions());
+  $("#preview").innerHTML = "";
+  state.qr.append($("#preview"));
+}
+
+async function render(){
+  await ensureQR();
+  state.qr.update(getOptions());
+}
+
+async function download(ext){
+  await render();
+  state.qr.download({ name: "qr", extension: ext });
+}
+
+async function copyEmbed(){
+  try{
+    await render();
+    const blob = await state.qr.getRawData("png");
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      const code = `<img alt="QR" src="${dataUrl}" width="${$("#size").value}" height="${$("#size").value}" />`;
+      await navigator.clipboard.writeText(code);
+      toast("Embed copied");
+    };
+    reader.readAsDataURL(blob);
+  }catch(e){
+    toast("Copy failed");
+  }
+}
+
+function resetAll(){
+  $("#qrType").value="text";
+  renderTypeFields();
+  $("#textData") && ($("#textData").value="https://example.com");
+  $("#size").value=320; $("#ec").value="M"; $("#margin").value=8;
+  $("#dotsType").value="rounded"; $("#dotsColor").value="#111827";
+  $("#bgColor").value="#ffffff"; $("#transparent").value="no";
+  $("#logo").value=""; state.logo=null; $("#logoSize").value=0.25;
+  $("#cornerStyle").value="default";
+  render();
+}
+
+$("#qrType").addEventListener("change", renderTypeFields);
+$("#generate").addEventListener("click", render);
+$("#downloadPng").addEventListener("click", ()=>download("png"));
+$("#downloadSvg").addEventListener("click", ()=>download("svg"));
+$("#copyEmbed").addEventListener("click", copyEmbed);
+$("#reset").addEventListener("click", resetAll);
+
+$("#logo").addEventListener("change", async e=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  try{ state.logo = await fileToDataURL(f); render(); }
+  catch{ toast("Logo load failed"); }
+});
+
+$("#darkToggle").addEventListener("change", e=>{
+  document.documentElement.classList.toggle("dark", e.target.checked);
+});
+
+// Init
+renderTypeFields();
+render();
+</script>
+</body>
+</html>
